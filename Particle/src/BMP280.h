@@ -54,34 +54,35 @@
 class BMP280{
 public:
     int address = 0x76;
-    
+
+    void setAddress(int a0);
+    void init();
+
     int scale = TEMP_SCALE_CELSIUS;
     int mode = BMP280_MODE_NORMAL;
     int osrs_t = BMP280_OST_2;
     int osrs_p = BMP280_OSP_2;
     int sb_time = BMP280_TSB_0_5;
     int filter = BMP280_FILTER_0;
-    
-    int loop_delay = 0;
-    int last_checked = 0;
-    
-    int temp_comp[3];
-    int press_comp[9];
-    
+
     double temperature;
     double pressure;
-    
-    int readRate();
-    void getParams();
-    
+
     void takeReadings();
     void loop();
-    
-    void setAddress(int a0);
-    void init();
 private:
+    int last_checked = 0;
+	int loop_delay = 0;
+
+    int temp_comp[3];
+    int press_comp[9];
+
+    int readRate();
+    void getParams();
+
     void begin();
     void writeByte(int reg, int data);
     void readBuffer(int reg, int *buff, int length);
     int readByte(int reg);
+	int _signed(int n, int sign);
 };

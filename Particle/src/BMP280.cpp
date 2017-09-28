@@ -2,13 +2,8 @@
 
 void BMP280::init(){
     begin();
-    
-    // Normal mode, temp and pressure over sampling rate = 1
     writeByte(BMP280_CTRL_REG, osrs_p | osrs_t | mode);
-    
-    // Stand_by time = 1000ms
     writeByte(BMP280_CONFIG_REG, sb_time | filter);
-    
     getParams();
 }
 
@@ -20,18 +15,18 @@ void BMP280::getParams(){
     int ptdata[25];
     readBuffer(BMP280_PARAMS_START, ptdata, 24);
     temp_comp[0] = ptdata[0] + (ptdata[1] << 8);
-    temp_comp[1] = ptdata[2] + (ptdata[3] << 8);
-    temp_comp[2] = ptdata[4] + (ptdata[5] << 8);
-    
+    temp_comp[1] = _signed(ptdata[2] + (ptdata[3] << 8), 16);
+    temp_comp[2] = _signed(ptdata[4] + (ptdata[5] << 8), 16);
+
     press_comp[0] = ptdata[6] + (ptdata[7] << 8);
-    press_comp[1] = ptdata[8] + (ptdata[9] << 8);
-    press_comp[2] = ptdata[10] + (ptdata[11] << 8);
-    press_comp[3] = ptdata[12] + (ptdata[13] << 8);
-    press_comp[4] = ptdata[14] + (ptdata[15] << 8);
-    press_comp[5] = ptdata[16] + (ptdata[17] << 8);
-    press_comp[6] = ptdata[18] + (ptdata[19] << 8);
-    press_comp[7] = ptdata[20] + (ptdata[21] << 8);
-    press_comp[8] = ptdata[22] + (ptdata[23] << 8);
+    press_comp[1] = _signed(ptdata[8] + (ptdata[9] << 8), 16);
+    press_comp[2] = _signed(ptdata[10] + (ptdata[11] << 8), 16);
+    press_comp[3] = _signed(ptdata[12] + (ptdata[13] << 8), 16);
+    press_comp[4] = _signed(ptdata[14] + (ptdata[15] << 8), 16);
+    press_comp[5] = _signed(ptdata[16] + (ptdata[17] << 8), 16);
+    press_comp[6] = _signed(ptdata[18] + (ptdata[19] << 8), 16);
+    press_comp[7] = _signed(ptdata[20] + (ptdata[21] << 8), 16);
+    press_comp[8] = _signed(ptdata[22] + (ptdata[23] << 8), 16);
 }
 
 int BMP280::readRate(){
@@ -85,22 +80,22 @@ int BMP280::readRate(){
 void BMP280::takeReadings(){
     int vardata[7];
     readBuffer(BMP280_PRESS_REG0, vardata, 6);
-    
+
     int press_var = (vardata[0] << 12) + (vardata[1] << 4) + (vardata[2] >> 4);
     int temp_var = (vardata[3] << 12) + (vardata[4] << 4) + (vardata[5] >> 4);
-    
+
     //Calculate temperature
     int tvar1 = (((double)temp_var)/16384.0 - ((double)temp_comp[0])/1024.0) * ((double)temp_comp[1]);
     int tvar2 = ((((double)temp_var)/131072.0 - ((double)temp_comp[0])/8192.0) * (((double)temp_var)/131072.0 - ((double) temp_comp[0])/8192.0)) * ((double)temp_comp[2]);
     int t_fine = tvar1 + tvar2;
     temperature = t_fine / 5120.0;
-    
+
     if(scale == TEMP_SCALE_KELVIN) temperature = temperature + 273.15;
     else if(scale == TEMP_SCALE_FAHRENHEIT) temperature = temperature * 1.8 + 32;
-    
+
     //Calculate pressure
     pressure = 256;
-    
+
     double pvar1 = ((double)t_fine/2.0) - 64000.0;
     double pvar2 = pvar1 * pvar1 * ((double)press_comp[5]) / 32768.0;
     pvar2 = pvar2 + pvar1 * ((double)press_comp[4]) * 2.0;
@@ -114,7 +109,7 @@ void BMP280::takeReadings(){
         pvar2 = pressure * ((double)press_comp[7]) / 32768.0;
         pressure = pressure + (pvar1 + pvar2 + ((double)press_comp[6])) / 16.0;
     }
-    
+
 }
 
 void BMP280::loop(){
@@ -151,4 +146,9 @@ void BMP280::readBuffer(int reg, int *buff, int len){
     for(int i=0;i<len;i++){
         buff[i] = Wire.read();
     }
+}
+
+int BMP280::_signed(int n, int bits){
+	if(n > (1 << (bits-1))) return n - (1 << bits);
+	return n;
 }
