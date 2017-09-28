@@ -33,7 +33,7 @@ Sensor.sb_time = BMP280_TSB_62_5;
 Sensor.filter = BMP280_FILTER_0;
 ```
 
->Initialize the device, the argument is optional, and will set all outputs to off.
+>Initialize the device
 ```cpp
 Sensor.init();
 ```
