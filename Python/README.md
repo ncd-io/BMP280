@@ -2,7 +2,7 @@
 
 # About
 
-This Library is intended for use with any BMP280 board board available from ncd.io
+This Library is intended for use with any BMP280 board available from ncd.io
 
 ### Developer information
 NCD has been designing and manufacturing computer control products since 1995.  We have specialized in hardware design and manufacturing of Relay controllers for 20 years.  We pride ourselves as being the industry leader of computer control relay products.  Our products are proven reliable and we are very excited to support Particle.  For more information on NCD please visit ncd.io
